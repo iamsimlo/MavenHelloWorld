@@ -10,6 +10,11 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- powershell: |
+    chrome --version     
+    chromedriver --version
+       displayName: Check Chrome and Driver versions
+
 - task: Maven@3
   inputs:
     mavenPomFile: 'pom.xml'
