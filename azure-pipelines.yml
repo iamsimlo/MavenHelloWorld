@@ -1,39 +1,78 @@
 # Maven
+
 # Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
+ 
 trigger:
+
 - master
-
+ 
 pool:
+
   vmImage: ubuntu-latest
-
+ 
 steps:
-- powershell: |
-    chrome --version     
-    chromedriver --version
-       displayName: Check Chrome and Driver versions
+ 
+- task: JavaToolInstaller@0
 
-- task: Maven@3
+  displayName: Set up Java 17
+
   inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.11'
+
+    versionSpec: '17'
+
     jdkArchitectureOption: 'x64'
+
+    jdkSourceOption: 'PreInstalled'
+ 
+- bash: |
+
+    google-chrome --version || true
+
+    java -version
+
+  displayName: Check Chrome and Java versions
+ 
+- task: Maven@3
+
+  displayName: Run Maven Tests
+
+  inputs:
+
+    mavenPomFile: 'pom.xml'
+
+    mavenOptions: '-Xmx3072m'
+
+    javaHomeOption: 'JDKVersion'
+
+    jdkVersionOption: '17'
+
+    jdkArchitectureOption: 'x64'
+
     publishJUnitResults: true
+
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
 
+    goals: 'clean test package'
+ 
 - task: CopyFiles@2
+
+  displayName: Copy WAR file
+
   inputs:
+
     Contents: '**/*.war'
+
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
+ 
 - task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'warfile'
-    publishLocation: 'Container'
 
+  displayName: Publish Artifact
+
+  inputs:
+
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+
+    ArtifactName: 'warfile'
+
+    publishLocation: 'Container'
+ 
